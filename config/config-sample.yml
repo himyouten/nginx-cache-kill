@@ -1,0 +1,10 @@
+http:
+    # port for app to listen on
+    port: 8080
+logging:
+    console:
+        # console log level
+        level: info
+    file:
+        # file log location, remove if only logging to console, also has level
+        filename: /var/log/nginx/invalidator.log

@@ -1,0 +1,15 @@
+{
+  "name": "nginx-invalidator",
+  "description": "Nginx Cache Invalidator",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./app",
+  "dependencies": {
+    "nconf": "*",
+    "js-yaml": "*",
+    "winston": "*",
+    "express": "3.x",
+    "express-hbs": "*",
+    "cache-manager": "*"
+  }
+}
