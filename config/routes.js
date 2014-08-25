@@ -9,6 +9,9 @@ module.exports.load = function(app){
     // homepage
     app.all('/', site.homepage);
 
+    app.all('/api/kill', cachekill.kill);
+    app.all('/api/list', cachekill.kill);
+
     app.use(error.notFound);
     
     app.use(error.logErrors);
