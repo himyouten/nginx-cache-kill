@@ -111,7 +111,7 @@ describe('nginx-cache-kill', function(){
         var url = 'http://my.test/purgeUrlTest.htm';
         var urlhash = 'a8eaceed55be868b1b7058c37cc12f76';
 
-        beforeEach(function(){
+        beforeEach(function(done){
             testUtils.initTmpDir(tmpDir, [urlhash]);
             testUtils.initRedis(redisHost, redisPort, done);
         });
