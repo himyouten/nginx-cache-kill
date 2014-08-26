@@ -4,7 +4,7 @@ describe('nginx-cache-kill', function(){
     var assert = require("assert")
     var config = require('../config/config');
     var logger = require('../config/log')(config);
-    var redis = require('redis');
+    var Spade = require('spade');
 
     var tmpDir = './test/tmp';
     var testConfig = {
@@ -14,7 +14,7 @@ describe('nginx-cache-kill', function(){
                 cache_dir: '/var/spool/nginx',
                 has_related: false,
                 redis: {
-                    host: '127.0.0.1',
+                    host: 'vcptstred1.8h6a7w.0001.use1.cache.amazonaws.com',
                     port: 6379
                 }
             },
@@ -27,7 +27,7 @@ describe('nginx-cache-kill', function(){
                     cache_levels: '',
                     cache_dir: tmpDir
                 },
-                'my.testRelated': {
+                'my.testrelated': {
                     cache_levels: '',
                     cache_dir: tmpDir,
                     has_related: true,
@@ -42,25 +42,18 @@ describe('nginx-cache-kill', function(){
     try {
         
         logger.log('info','test connecting to redis %s:%s', testConfig.cachekill.default.redis.host, testConfig.cachekill.default.redis.port);
-        var redisClient = redis.createClient(testConfig.cachekill.default.redis.port, testConfig.cachekill.default.redis.host);
+        var redisClient = new Spade( { socket: { address: { port: testConfig.cachekill.default.redis.port, host: testConfig.cachekill.default.redis.host}}});
         
-        logger.log('info', 'test connected to %s:%s', redisClient.host, redisClient.port);
+        logger.log('info', 'test redis connected');
         redisClient.on("error", function(err){
-            logger.log('error', 'redis error:'+err)
+            logger.log('error', 'test redis error:'+err)
         });
         redisClient.on("connect", function(){
             logger.log('info', 'test redis connected');
-            redisClient.sadd(url, 'http://my.testrelated/purgeTest.htm?related1');
-            redisClient.sadd(url, 'http://my.testrelated/purgeTest.htm?related2');
-            redisClient.smembers(url, function(err, urls){
-                if (err){ 
-                    logger.log('error', 'test error fetching related urls, '+err);
-                    return;
-                }
-                logger.log('info', 'test related urls added: '+urls);
-            });
+            redisClient.commands.sadd(url, 'http://my.testrelated/purgeTest.htm?related1');
+            redisClient.commands.sadd(url, 'http://my.testrelated/purgeTest.htm?related2');
         });
-
+    
     } catch (err){
         logger.log('warn', 'test cannot connect to redis');
     }
@@ -150,6 +143,15 @@ describe('nginx-cache-kill', function(){
             assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
             done();
         });
+
+        it('should remove the cache file and do a callback', function(done){
+            assert.ok(fs.statSync(tmpDir + '/' + urlhash).isFile(), 'missing test hash file');
+            nginxCache.purgeUrl(url, function(err, url, filepath){
+                logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhash, fs.existsSync(tmpDir + '/' + urlhash));
+                assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
+                done();
+            });
+        });
     });
     
     describe('#purge()', function(){
@@ -169,12 +171,21 @@ describe('nginx-cache-kill', function(){
             }
         });
         
-        it('should remove the cache file and related from redis', function(done){
+        it('should remove the cache file', function(done){
             assert.ok(fs.statSync(tmpDir + '/' + urlhash).isFile(), 'missing test hash file');
             nginxCache.purge(url);
             logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhash, fs.existsSync(tmpDir + '/' + urlhash));
             assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
             done();
+        });
+        
+        it('should remove the cache file and do callback', function(done){
+            assert.ok(fs.statSync(tmpDir + '/' + urlhash).isFile(), 'missing test hash file');
+            nginxCache.purge(url, function(err, url, filepath){
+                logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhash, fs.existsSync(tmpDir + '/' + urlhash));
+                assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
+                done();
+            });
         });
     });    
     
@@ -199,13 +210,19 @@ describe('nginx-cache-kill', function(){
         });
 
         it('should remove the cache file and related from redis', function(done){
+            var relatedUrlsCount = 1;
             assert.ok(fs.statSync(tmpDir + '/' + urlhashRelated1).isFile(), 'missing test hash related1 file');
             assert.ok(fs.statSync(tmpDir + '/' + urlhashRelated2).isFile(), 'missing test hash related2 file');
-            nginxCache.purgeRelated(url);
-            logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhashRelated1, fs.existsSync(tmpDir + '/' + urlhashRelated1));
-            assert.equal(fs.existsSync(tmpDir + '/' + urlhashRelated1), false, 'test hash related1 file not deleted');
-            assert.equal(fs.existsSync(tmpDir + '/' + urlhashRelated2), false, 'test hash related2 file not deleted');
-            done();
+            nginxCache.purgeRelated(url, function(err, url, filepath){
+                logger.log('info', 'typeof:%s', typeof(url));
+                logger.log('info', 'file %s isExists:%s', filepath, fs.existsSync(filepath));
+                if (url.indexOf('?related') > -1){
+                    assert.equal(fs.existsSync(filepath), false, 'test hash file:%s not deleted for:%s', filepath, url);
+                }
+                if (relatedUrlsCount++ >= 2){
+                    done();
+                }
+            });
         });
     });    
 })
