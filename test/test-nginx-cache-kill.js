@@ -1,11 +1,17 @@
 describe('nginx-cache-kill', function(){
     var NginxCacheKill = require('../lib/nginx-cache-kill.js');
-    var fs = require("fs")
-    var assert = require("assert")
+    var fs = require("fs");
+    var assert = require("assert");
     var config = require('../config/config');
     var logger = require('../config/log')(config);
     var redis = require('redis');
 
+    var redisHost = '127.0.0.1';
+    var redisPort = 6379;
+    
+    if (!(typeof(process.env.HOST)==='undefined') && process.env.HOST.length > 0) redisHost = process.env.HOST;
+    if (!(typeof(process.env.PORT)==='undefined') && process.env.PORT.length > 0) redisPort = process.env.PORT;
+    
     var tmpDir = './test/tmp';
     var testConfig = {
         cachekill: {
@@ -14,8 +20,8 @@ describe('nginx-cache-kill', function(){
                 cache_dir: '/var/spool/nginx',
                 has_related: false,
                 redis: {
-                    host: 'vcptstred1.8h6a7w.0001.use1.cache.amazonaws.com',
-                    port: 6379
+                    host: redisHost,
+                    port: redisPort
                 }
             },
             sites: {
