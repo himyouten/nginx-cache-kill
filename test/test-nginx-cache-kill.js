@@ -14,7 +14,7 @@ describe('nginx-cache-kill', function(){
                 cache_dir: '/var/spool/nginx',
                 has_related: false,
                 redis: {
-                    host: '127.0.0.1',
+                    host: 'vcptstred1.8h6a7w.0001.use1.cache.amazonaws.com',
                     port: 6379
                 }
             },
