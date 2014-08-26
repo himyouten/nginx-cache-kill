@@ -45,6 +45,7 @@ describe('nginx-cache-kill', function(){
     config.overrides(testConfig);
     var nginxCache = new NginxCacheKill(config.get('cachekill:sites'), config.get('cachekill:default'));
     var redisClient = null;
+    
     try {
         
         logger.log('info','test connecting to redis %s:%s', testConfig.cachekill.default.redis.host, testConfig.cachekill.default.redis.port);

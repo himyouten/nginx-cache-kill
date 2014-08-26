@@ -20,3 +20,7 @@ cachekill:
         my.test:
             cache_levels: ''
             cache_dir: ./test/tmp
+        my.testrelated:
+            cache_levels: ''
+            cache_dir: ./test/tmp
+            has_related: true
