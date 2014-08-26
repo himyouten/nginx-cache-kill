@@ -27,7 +27,7 @@ describe('nginx-cache-kill', function(){
                     cache_levels: '',
                     cache_dir: tmpDir
                 },
-                'my.testRelated': {
+                'my.testrelated': {
                     cache_levels: '',
                     cache_dir: tmpDir,
                     has_related: true,
@@ -150,6 +150,15 @@ describe('nginx-cache-kill', function(){
             assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
             done();
         });
+
+        it('should remove the cache file and do a callback', function(done){
+            assert.ok(fs.statSync(tmpDir + '/' + urlhash).isFile(), 'missing test hash file');
+            nginxCache.purgeUrl(url, function(err, url, filepath){
+                logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhash, fs.existsSync(tmpDir + '/' + urlhash));
+                assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
+                done();
+            });
+        });
     });
     
     describe('#purge()', function(){
@@ -169,12 +178,21 @@ describe('nginx-cache-kill', function(){
             }
         });
         
-        it('should remove the cache file and related from redis', function(done){
+        it('should remove the cache file', function(done){
             assert.ok(fs.statSync(tmpDir + '/' + urlhash).isFile(), 'missing test hash file');
             nginxCache.purge(url);
             logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhash, fs.existsSync(tmpDir + '/' + urlhash));
             assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
             done();
+        });
+        
+        it('should remove the cache file and do callback', function(done){
+            assert.ok(fs.statSync(tmpDir + '/' + urlhash).isFile(), 'missing test hash file');
+            nginxCache.purge(url, function(err, url, filepath){
+                logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhash, fs.existsSync(tmpDir + '/' + urlhash));
+                assert.equal(fs.existsSync(tmpDir + '/' + urlhash), false, 'test hash file not deleted');
+                done();
+            });
         });
     });    
     
@@ -199,13 +217,19 @@ describe('nginx-cache-kill', function(){
         });
 
         it('should remove the cache file and related from redis', function(done){
+            var relatedUrlsCount = 1;
             assert.ok(fs.statSync(tmpDir + '/' + urlhashRelated1).isFile(), 'missing test hash related1 file');
             assert.ok(fs.statSync(tmpDir + '/' + urlhashRelated2).isFile(), 'missing test hash related2 file');
-            nginxCache.purgeRelated(url);
-            logger.log('info', 'file %s isExists:%s', tmpDir + '/' + urlhashRelated1, fs.existsSync(tmpDir + '/' + urlhashRelated1));
-            assert.equal(fs.existsSync(tmpDir + '/' + urlhashRelated1), false, 'test hash related1 file not deleted');
-            assert.equal(fs.existsSync(tmpDir + '/' + urlhashRelated2), false, 'test hash related2 file not deleted');
-            done();
+            nginxCache.purgeRelated(url, function(err, url, filepath){
+                logger.log('info', 'typeof:%s', typeof(url));
+                logger.log('info', 'file %s isExists:%s', filepath, fs.existsSync(filepath));
+                if (url.indexOf('?related') > -1){
+                    assert.equal(fs.existsSync(filepath), false, 'test hash file:%s not deleted for:%s', filepath, url);
+                }
+                if (relatedUrlsCount++ >= 2){
+                    done();
+                }
+            });
         });
     });    
 })
