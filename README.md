@@ -1,4 +1,4 @@
-# Nginx Cache Invalidator
+# Nginx Cache Kill
 
 Description: Node.js based Nginx cache invalidator that uses a Redis db to perform pseudo wildcard invalidation
 
