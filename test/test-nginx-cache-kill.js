@@ -1,76 +1,50 @@
-describe('nginx-cache-kill', function(){
-    var NginxCacheKill = require('../lib/nginx-cache-kill.js');
-    var fs = require("fs");
-    var assert = require("assert");
-    var config = require('../config/config');
-    var logger = require('../config/log')(config);
-    var redis = require('redis');
+var NginxCacheKill = require('../lib/nginx-cache-kill.js');
+var fs = require("fs");
+var assert = require("assert");
+var config = require('../config/config');
+var logger = require('../config/log')(config);
+var testUtils = require('../lib/test-utils');
 
-    var redisHost = '127.0.0.1';
-    var redisPort = 6379;
-    
-    if (!(typeof(process.env.HOST)==='undefined') && process.env.HOST.length > 0) redisHost = process.env.HOST;
-    if (!(typeof(process.env.PORT)==='undefined') && process.env.PORT.length > 0) redisPort = process.env.PORT;
-    
-    var tmpDir = './test/tmp';
-    var testConfig = {
-        cachekill: {
-            default: {
+var redisHost = '127.0.0.1';
+var redisPort = 6379;
+
+if (!(typeof(process.env.HOST)==='undefined') && process.env.HOST.length > 0) redisHost = process.env.HOST;
+if (!(typeof(process.env.PORT)==='undefined') && process.env.PORT.length > 0) redisPort = process.env.PORT;
+
+var tmpDir = './test/tmp';
+var testConfig = {
+    cachekill: {
+        default: {
+            cache_levels: '1:2',
+            cache_dir: '/var/spool/nginx',
+            has_related: false,
+            redis: {
+                host: redisHost,
+                port: redisPort
+            }
+        },
+        sites: {
+            'my.domain': {
                 cache_levels: '1:2',
-                cache_dir: '/var/spool/nginx',
-                has_related: false,
-                redis: {
-                    host: redisHost,
-                    port: redisPort
-                }
+                cache_dir: '/var/spool/nginx'
             },
-            sites: {
-                'my.domain': {
-                    cache_levels: '1:2',
-                    cache_dir: '/var/spool/nginx'
-                },
-                'my.test': {
-                    cache_levels: '',
-                    cache_dir: tmpDir
-                },
-                'my.testrelated': {
-                    cache_levels: '',
-                    cache_dir: tmpDir,
-                    has_related: true,
-                }
+            'my.test': {
+                cache_levels: '',
+                cache_dir: tmpDir
+            },
+            'my.testrelated': {
+                cache_levels: '',
+                cache_dir: tmpDir,
+                has_related: true,
             }
         }
-    };
-
-    config.overrides(testConfig);
-    var nginxCache = new NginxCacheKill(config.get('cachekill:sites'), config.get('cachekill:default'));
-    var redisClient = null;
-    
-    try {
-        
-        logger.log('info','test connecting to redis %s:%s', testConfig.cachekill.default.redis.host, testConfig.cachekill.default.redis.port);
-        var redisClient = redis.createClient(testConfig.cachekill.default.redis.port, testConfig.cachekill.default.redis.host);
-        
-        logger.log('info', 'test connected to %s:%s', redisClient.host, redisClient.port);
-        redisClient.on("error", function(err){
-            logger.log('error', 'redis error:'+err)
-        });
-        redisClient.on("connect", function(){
-            logger.log('info', 'test redis connected');
-            redisClient.sadd(url, 'http://my.testrelated/purgeTest.htm?related1');
-            redisClient.sadd(url, 'http://my.testrelated/purgeTest.htm?related2');
-            redisClient.smembers(url, function(err, urls){
-                if (err){ 
-                    logger.log('error', 'test error fetching related urls, '+err);
-                    return;
-                }
-                logger.log('info', 'test related urls added: '+urls);
-            });
-        });
-
-    } catch (err){
-        logger.log('warn', 'test cannot connect to redis');
     }
+};
+
+config.overrides(testConfig);
+var nginxCache = new NginxCacheKill(config.get('cachekill:sites'), config.get('cachekill:default'));
+
+describe('nginx-cache-kill', function(){
     
     describe('#getConfig()', function(){
         
@@ -138,16 +112,8 @@ describe('nginx-cache-kill', function(){
         var urlhash = 'a8eaceed55be868b1b7058c37cc12f76';
 
         beforeEach(function(){
-            try {
-                fs.mkdirSync(tmpDir)
-            } catch (err){
-                logger.log('warn', 'failed to mkdir tmpDir:%s, %s', tmpDir, err);
-            }
-            try {
-                var fd = fs.writeFileSync(tmpDir + '/' + urlhash, '');
-            } catch (err){
-                logger.log('warn', 'failed to create tmp file:%s, %s', tmpDir + '/' + urlhash, err);
-            }
+            testUtils.initTmpDir(tmpDir, [urlhash]);
+            testUtils.initRedis(redisHost, redisPort, done);
         });
         
         it('should remove the cache file', function(done){
@@ -172,17 +138,9 @@ describe('nginx-cache-kill', function(){
         var url = 'http://my.test/purgeTest.htm';
         var urlhash = '3a7fe5ce0ce354896335e1517f013749';
 
-        beforeEach(function(){
-            try {
-                fs.mkdirSync(tmpDir)
-            } catch (err){
-                logger.log('warn', 'failed to mkdir tmpDir:%s, %s', tmpDir, err);
-            }
-            try {
-                var fd = fs.writeFileSync(tmpDir + '/' + urlhash, '');
-            } catch (err){
-                logger.log('warn', 'failed to create tmp file:%s, %s', tmpDir + '/' + urlhash, err);
-            }
+        beforeEach(function(done){
+            testUtils.initTmpDir(tmpDir, [urlhash]);
+            testUtils.initRedis(redisHost, redisPort, done);
         });
         
         it('should remove the cache file', function(done){
@@ -208,19 +166,9 @@ describe('nginx-cache-kill', function(){
         // var urlhash = '3f1e26881695e5719c81e0cfca1b38cb';
         var urlhashRelated1 = '40746ac599f61aa83c594def3a6d541f';
         var urlhashRelated2 = '6a96d2706d02f82d8f7ca6324c050f6d'
-        beforeEach(function(){
-            try {
-                fs.mkdirSync(tmpDir)
-            } catch (err){
-                logger.log('warn', 'failed to mkdir tmpDir:%s, %s', tmpDir, err);
-            }
-            try {
-                // fs.writeFileSync(tmpDir + '/' + urlhash, '');
-                fs.writeFileSync(tmpDir + '/' + urlhashRelated1, '');
-                fs.writeFileSync(tmpDir + '/' + urlhashRelated2, '');
-            } catch (err){
-                logger.log('warn', 'failed to create tmp files in:%s, %s', tmpDir, err);
-            }
+        beforeEach(function(done){
+            testUtils.initTmpDir(tmpDir, [urlhashRelated1, urlhashRelated2]);
+            testUtils.initRedis(redisHost, redisPort, done);
         });
 
         it('should remove the cache file and related from redis', function(done){
