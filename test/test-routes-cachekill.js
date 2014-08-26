@@ -4,6 +4,7 @@ var app = require('../app.js');
 var logger = require('winston');
 var redis = require('redis');
 var request = require('supertest');
+var testUtils = require('../lib/test-utils');
 
 var tmpDir = './test/tmp';
 var url = 'http://my.test/purgeTest.htm';
