@@ -11,6 +11,7 @@
     "express": "3.x",
     "express-hbs": "*",
     "cache-manager": "*",
-    "MD5": "*"
+    "MD5": "*",
+    "redis": "*"
   }
 }

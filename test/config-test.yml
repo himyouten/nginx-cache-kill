@@ -9,6 +9,10 @@ cachekill:
     default:
         cache_levels: '1:2'
         cache_dir: /var/spool/nginx
+        has_related: false
+        redis:
+            host: '127.0.0.1'
+            port: 6379
     sites:
         my.domain:
             cache_levels: '1:2'
