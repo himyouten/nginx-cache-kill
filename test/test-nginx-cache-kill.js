@@ -41,11 +41,11 @@ describe('nginx-cache-kill', function(){
     var redisClient = null;
     try {
         
-        logger.log('info','connecting to redis %s:%s', testConfig.cachekill.default.redis.host, testConfig.cachekill.default.redis.port);
+        logger.log('info','test connecting to redis %s:%s', testConfig.cachekill.default.redis.host, testConfig.cachekill.default.redis.port);
         // var redisClient = redis.createClient(testConfig.cachekill.default.redis.port, testConfig.cachekill.default.redis.host);
         redisClient = redis.createClient();
         
-        logger.log('info', 'connected to %s:%s', redisClient.host, redisClient.port);
+        logger.log('info', 'test connected to %s:%s', redisClient.host, redisClient.port);
         redisClient.on("error", function(err){
             logger.log('error', 'redis error:'+err)
         });
@@ -55,15 +55,15 @@ describe('nginx-cache-kill', function(){
             redisClient.sadd(url, 'http://my.testrelated/purgeTest.htm?related2');
             redisClient.smembers(url, function(err, urls){
                 if (err){ 
-                    logger.log('error', 'error fetching related urls, '+err);
+                    logger.log('error', 'test error fetching related urls, '+err);
                     return;
                 }
-                logger.log('info', 'related urls added: '+urls);
+                logger.log('info', 'test related urls added: '+urls);
             });
         });
 
     } catch (err){
-        logger.log('warn', 'cannot connect to redis');
+        logger.log('warn', 'test cannot connect to redis');
     }
     
     describe('#getConfig()', function(){
