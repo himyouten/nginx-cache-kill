@@ -42,8 +42,7 @@ describe('nginx-cache-kill', function(){
     try {
         
         logger.log('info','test connecting to redis %s:%s', testConfig.cachekill.default.redis.host, testConfig.cachekill.default.redis.port);
-        // var redisClient = redis.createClient(testConfig.cachekill.default.redis.port, testConfig.cachekill.default.redis.host);
-        redisClient = redis.createClient();
+        var redisClient = redis.createClient(testConfig.cachekill.default.redis.port, testConfig.cachekill.default.redis.host);
         
         logger.log('info', 'test connected to %s:%s', redisClient.host, redisClient.port);
         redisClient.on("error", function(err){
