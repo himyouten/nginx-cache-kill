@@ -1,10 +1,14 @@
 var fs = require("fs");
 var assert = require("assert");
 var app = require('../app.js');
+var config = require('../config/config');
 var logger = require('winston');
 var redis = require('redis');
 var request = require('supertest');
 var testUtils = require('../lib/test-utils');
+
+var redisHost = config.get('cachekill:default:redis:host');
+var redisPort = config.get('cachekill:default:redis:port');
 
 var tmpDir = './test/tmp';
 var url = 'http://my.test/purgeTest.htm';
