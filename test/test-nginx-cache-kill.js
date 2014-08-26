@@ -5,43 +5,10 @@ var config = require('../config/config');
 var logger = require('../config/log')(config);
 var testUtils = require('../lib/test-utils');
 
-var redisHost = '127.0.0.1';
-var redisPort = 6379;
-
-if (!(typeof(process.env.HOST)==='undefined') && process.env.HOST.length > 0) redisHost = process.env.HOST;
-if (!(typeof(process.env.PORT)==='undefined') && process.env.PORT.length > 0) redisPort = process.env.PORT;
+var redisHost = config.get('cachekill:default:redis:host');
+var redisPort = config.get('cachekill:default:redis:port');
 
 var tmpDir = './test/tmp';
-var testConfig = {
-    cachekill: {
-        default: {
-            cache_levels: '1:2',
-            cache_dir: '/var/spool/nginx',
-            has_related: false,
-            redis: {
-                host: redisHost,
-                port: redisPort
-            }
-        },
-        sites: {
-            'my.domain': {
-                cache_levels: '1:2',
-                cache_dir: '/var/spool/nginx'
-            },
-            'my.test': {
-                cache_levels: '',
-                cache_dir: tmpDir
-            },
-            'my.testrelated': {
-                cache_levels: '',
-                cache_dir: tmpDir,
-                has_related: true,
-            }
-        }
-    }
-};
-
-config.overrides(testConfig);
 var nginxCache = new NginxCacheKill(config.get('cachekill:sites'), config.get('cachekill:default'));
 
 describe('nginx-cache-kill', function(){
