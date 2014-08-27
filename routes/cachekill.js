@@ -29,8 +29,7 @@ exports.killUrls = function(req, res, next){
         if (url instanceof Array) {
             urls = url;
         } else {
-            logger.log('debug','single url POSTED');
-            urls = [url];
+            urls = url.split("\n");
         }
         for (var i=0; i < urls.length; i++){
             nginxCacheKill.purge(urls[i], function(err, url, filepath){

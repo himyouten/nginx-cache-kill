@@ -70,8 +70,16 @@ describe('routes/cachekill.js', function(){
                 .expect(200, done);
         });
 
-        it('should delete related also', function(done){
+        it('should handle url as array', function(done){
             var postdata = {url: [url, urlRelated]};
+            request(app)
+                .post('/api/kill')
+                .send(postdata)
+                .expect(200, done);
+        });
+
+        it('should handle new line delimited', function(done){
+            var postdata = {url: url+"\n"+urlRelated};
             request(app)
                 .post('/api/kill')
                 .send(postdata)
