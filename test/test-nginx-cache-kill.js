@@ -142,14 +142,24 @@ describe('nginx-cache-kill', function(){
             var relatedUrlsCount = 1;
             assert.ok(fs.statSync(tmpDir + '/' + urlhashRelated1).isFile(), 'missing test hash related1 file');
             assert.ok(fs.statSync(tmpDir + '/' + urlhashRelated2).isFile(), 'missing test hash related2 file');
-            nginxCache.purgeRelated(url, function(err, url, filepath){
-                logger.log('info', 'typeof:%s', typeof(url));
-                logger.log('info', 'file %s isExists:%s', filepath, fs.existsSync(filepath));
-                if (url.indexOf('?related') > -1){
-                    assert.equal(fs.existsSync(filepath), false, 'test hash file:%s not deleted for:%s', filepath, url);
-                }
-                if (relatedUrlsCount++ >= 2){
-                    done();
+            nginxCache.purgeRelated(url, function(cb_err, cb_url, cb_filepath){
+                logger.log('info', 'typeof:%s', typeof(cb_url));
+                logger.log('info', 'file %s isExists:%s', cb_filepath, fs.existsSync(cb_filepath));
+                if (cb_url.indexOf('?related') > -1){
+                    assert.equal(fs.existsSync(cb_filepath), false, 'test hash file:%s not deleted for:%s', cb_filepath, cb_url);
+                    // check if removed from redis too
+                    testUtils.checkRedis(redisHost, redisPort, url, cb_url, function(r_err, r_reply){
+                        if (r_err){
+                            logger.log('error', 'error checking redis in:%s for:%s, '+r_err, url, cb_url);
+                            assert.ifError(r_err);
+                            done();
+                            return;
+                        }
+                        assert.equals(r_reply.length, 0, cb_url + ' not removed from redis');
+                        if (relatedUrlsCount++ >= 2){
+                            done();
+                        }
+                    });
                 }
             });
         });
