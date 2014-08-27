@@ -155,7 +155,7 @@ describe('nginx-cache-kill', function(){
                             done();
                             return;
                         }
-                        assert.equals(r_reply.length, 0, cb_url + ' not removed from redis');
+                        assert.equal(r_reply.length, 0, cb_url + ' not removed from redis');
                         if (relatedUrlsCount++ >= 2){
                             done();
                         }
