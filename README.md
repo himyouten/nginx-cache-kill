@@ -9,6 +9,7 @@ Download or pull code.  Requires Node.js and npm to be installed.
 1. _Node.js_
 2. _npm_
 3. _pm2_ would be needed to start/stop the application
+4. _Redis_ server to read the related urls from
 
 ## Testing
 
@@ -71,6 +72,7 @@ warn: config not found using defaults for baddomain
 - Install Node.js
 - Install npm
 - Install pm2 to start and stop the application
+- Install Redis
 - In the main directory, run `npm install` to install the dependencies found in _package.json_
 
 ### Configs and logs
