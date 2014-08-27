@@ -5,6 +5,10 @@ var app = express();
 var hbs = require('express-hbs');
 var rootdir = require('path').dirname(require.main.filename);
 logger.log('info',"main filename:%s", require.main.filename);
+
+app.use(express.urlencoded());
+app.use(express.json());
+
 // set up static
 app.use("/public", express.static(rootdir + '/public'));
 

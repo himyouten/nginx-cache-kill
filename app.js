@@ -12,3 +12,5 @@ var routes = require('./config/routes').load(app);
 var server = require('http').Server(app);
 logger.log("debug","Starting on port:"+config.get('http:port'));
 server.listen(config.get('http:port'));
+
+module.exports = app;

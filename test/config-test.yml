@@ -4,10 +4,7 @@ http:
 logging:
     console:
         # console log level
-        level: info
-    file:
-        # file log location, remove if only logging to console, also has level
-        filename: /var/log/nginx/invalidator.log
+        level: debug
 cachekill:
     default:
         cache_levels: '1:2'
@@ -19,5 +16,11 @@ cachekill:
     sites:
         my.domain:
             cache_levels: '1:2'
-            cache_dir: /var/spool/nginx/my.domain
+            cache_dir: /var/spool/nginx
+        my.test:
+            cache_levels: ''
+            cache_dir: ./test/tmp
+        my.testrelated:
+            cache_levels: ''
+            cache_dir: ./test/tmp
             has_related: true

@@ -1,5 +1,8 @@
 var site = require('../routes/site');
 var error = require('../routes/error');
+var cachekill = require('../routes/cachekill');
+var express = require('express');
+
 module.exports.load = function(app){
     // login
     // app.get('/login', login.show);
@@ -8,6 +11,9 @@ module.exports.load = function(app){
 
     // homepage
     app.all('/', site.homepage);
+
+    app.get('/api/kill', cachekill.killUrl)
+    app.post('/api/kill', cachekill.killUrls);
 
     app.use(error.notFound);
     

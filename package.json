@@ -10,6 +10,9 @@
     "winston": "*",
     "express": "3.x",
     "express-hbs": "*",
-    "cache-manager": "*"
+    "cache-manager": "*",
+    "MD5": "*",
+    "redis": "*",
+    "supertest": "*"
   }
 }
